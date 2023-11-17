@@ -166,16 +166,22 @@ impl<T> Default for Vec<T> {
 
 #[cfg(test)]
 mod test {
+    macro_rules! mut_vec {
+        ($i:ident) => {
+            let mut $i = Vec::<usize>::new();
+        };
+    }
+
     use super::*;
 
     #[test]
     fn init_vec() {
-        Vec::<u8>::new();
+        mut_vec!(_v);
     }
 
     #[test]
     fn push_and_pop() {
-        let mut v = Vec::new();
+        mut_vec!(v);
         v.push(1);
         v.push(2);
         assert_eq!(v.pop(), Some(2));
@@ -185,11 +191,25 @@ mod test {
 
     #[test]
     fn insert() {
-        let mut v = Vec::new();
+        mut_vec!(v);
         v.push(1);
         v.insert(0, 3);
         assert_eq!(v.pop(), Some(1));
         assert_eq!(v.pop(), Some(3));
         assert_eq!(v.pop(), None);
+    }
+
+    #[test]
+    #[should_panic = "index out of bounds"]
+    fn remove_oob() {
+        mut_vec!(v);
+        let _: usize = v.remove(0);
+    }
+
+    #[test]
+    fn remove() {
+        mut_vec!(v);
+        v.push(1);
+        assert_eq!(v.remove(0), 1);
     }
 }
