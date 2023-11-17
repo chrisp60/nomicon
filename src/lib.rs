@@ -108,6 +108,12 @@ impl<T> std::ops::Deref for Vec<T> {
     }
 }
 
+impl<T> std::ops::DerefMut for Vec<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        unsafe { std::slice::from_raw_parts_mut(self.ptr.as_ptr(), self.len) }
+    }
+}
+
 impl<T> Drop for Vec<T> {
     fn drop(&mut self) {
         if self.cap != 0 {
@@ -143,5 +149,10 @@ mod test {
         assert_eq!(v.pop(), Some(2));
         assert_eq!(v.pop(), Some(1));
         assert_eq!(v.pop(), None);
+    }
+
+    fn idk() {
+        let x = 42;
+        let ptr = &x as *const _;
     }
 }
