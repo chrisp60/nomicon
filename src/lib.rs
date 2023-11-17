@@ -116,6 +116,20 @@ impl<T> Vec<T> {
             self.len += 1;
         }
     }
+
+    pub fn remove(&mut self, index: usize) -> T {
+        assert!(index < self.len, "index out of bounds");
+        unsafe {
+            self.len -= 1;
+            let result = ptr::read(self.ptr.as_ptr().add(index));
+            ptr::copy(
+                self.ptr.as_ptr().add(index + 1),
+                self.ptr.as_ptr().add(index),
+                self.len - index,
+            );
+            result
+        }
+    }
 }
 
 impl<T> std::ops::Deref for Vec<T> {
