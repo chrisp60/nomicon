@@ -1,8 +1,8 @@
 #![allow(dead_code)]
 
 use std::{
-    alloc::{alloc, realloc, Layout},
-    ptr::NonNull,
+    alloc::{alloc, dealloc, handle_alloc_error, realloc, Layout},
+    ptr::{self, NonNull},
 };
 
 #[derive(Debug)]
@@ -67,7 +67,7 @@ impl<T> Vec<T> {
         // If the ptr is good, update our current ptr.
         self.ptr = match NonNull::new(new_ptr as *mut T) {
             Some(ptr) => ptr,
-            None => std::alloc::handle_alloc_error(new_layout),
+            None => handle_alloc_error(new_layout),
         };
 
         // Finally, update our cap.
@@ -83,7 +83,7 @@ impl<T> Vec<T> {
         unsafe {
             let dst = self.ptr.as_ptr().add(self.len);
             let src = elem;
-            std::ptr::write(dst, src)
+            ptr::write(dst, src)
         }
 
         // OOM before overflow
@@ -95,8 +95,16 @@ impl<T> Vec<T> {
             None
         } else {
             self.len -= 1;
-            unsafe { Some(std::ptr::read(self.ptr.as_ptr().add(self.len))) }
+            unsafe { Some(ptr::read(self.ptr.as_ptr().add(self.len))) }
         }
+    }
+}
+
+impl<T> std::ops::Deref for Vec<T> {
+    type Target = [T];
+
+    fn deref(&self) -> &Self::Target {
+        unsafe { std::slice::from_raw_parts(self.ptr.as_ptr(), self.len) }
     }
 }
 
@@ -106,7 +114,7 @@ impl<T> Drop for Vec<T> {
             while self.pop().is_some() {}
             let layout = Layout::array::<T>(self.cap).unwrap();
             unsafe {
-                std::alloc::dealloc(self.ptr.as_ptr() as *mut u8, layout);
+                dealloc(self.ptr.as_ptr() as *mut u8, layout);
             }
         }
     }
