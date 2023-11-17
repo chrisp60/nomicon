@@ -98,6 +98,24 @@ impl<T> Vec<T> {
             unsafe { Some(ptr::read(self.ptr.as_ptr().add(self.len))) }
         }
     }
+
+    pub fn insert(&mut self, index: usize, elem: T) {
+        // inserting at the end of len is just pushing
+        assert!(index <= self.len, "index out of bounds");
+        if self.cap == self.len {
+            self.grow()
+        }
+        unsafe {
+            ptr::copy(
+                // inserting at index 2 shifts the elements at 2.. to 3..
+                self.ptr.as_ptr().add(index),
+                self.ptr.as_ptr().add(index + 1),
+                self.len - index,
+            );
+            ptr::write(self.ptr.as_ptr().add(index), elem);
+            self.len += 1;
+        }
+    }
 }
 
 impl<T> std::ops::Deref for Vec<T> {
@@ -151,8 +169,13 @@ mod test {
         assert_eq!(v.pop(), None);
     }
 
-    fn idk() {
-        let x = 42;
-        let ptr = &x as *const _;
+    #[test]
+    fn insert() {
+        let mut v = Vec::new();
+        v.push(1);
+        v.insert(0, 3);
+        assert_eq!(v.pop(), Some(1));
+        assert_eq!(v.pop(), Some(3));
+        assert_eq!(v.pop(), None);
     }
 }
