@@ -1,5 +1,3 @@
-#![allow(warnings)]
-
 use std::ptr::NonNull;
 
 use crate::cell::Cell;
@@ -72,8 +70,7 @@ impl<T> Rc<T> {
 
 impl<T> Clone for Rc<T> {
     fn clone(&self) -> Self {
-        let inner = unsafe { self.inner.as_ref() };
-        inner.increment();
+        self.increment();
         Self { inner: self.inner }
     }
 }
@@ -114,7 +111,7 @@ mod test {
         let r = Rc::new(30);
         let exp = 50;
 
-        let rs = (0..exp).map(|_| Rc::clone(&r)).collect::<Vec<_>>();
+        let _rs = (0..exp).map(|_| Rc::clone(&r)).collect::<Vec<_>>();
         assert_eq!(r.count(), exp + 1)
     }
 }
