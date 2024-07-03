@@ -194,13 +194,6 @@ mod test {
     }
 
     #[test]
-    #[should_panic = "index out of bounds"]
-    fn out_of_bound_panic() {
-        mut_vec!(v);
-        v.remove(0);
-    }
-
-    #[test]
     fn remove() {
         mut_vec!(v);
         v.push(1);

@@ -1,4 +1,4 @@
-#![feature(ptr_as_ref_unchecked, const_ptr_as_ref)]
+#![feature(ptr_as_ref_unchecked, const_ptr_as_ref, const_mut_refs)]
 #![doc = include_str!("../README.md")]
 
 pub mod cell;

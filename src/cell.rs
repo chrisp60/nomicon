@@ -18,7 +18,10 @@ impl<T> Cell<T> {
     }
 
     /// Replace the value in the [`Cell<T>`] with `value`.
-    pub fn set(&self, value: T) {
+    pub const fn set(&self, value: T)
+    where
+        T: Copy,
+    {
         // SAFETY:
         // * self is !Sync, so no other thread can mutate this value.
         // * self never releases a shared or mutable reference.
@@ -120,7 +123,7 @@ impl<T> RefCell<T> {
     ///
     /// exclusive.push(1);
     /// ```
-    pub fn try_borrow(&self) -> Option<Ref<'_, T>> {
+    pub const fn try_borrow(&self) -> Option<Ref<'_, T>> {
         match self.state.get() {
             RefState::Unshared => {
                 self.state.set(RefState::Shared(1));
@@ -152,7 +155,7 @@ impl<T> RefCell<T> {
     /// let mut new_exclusive = r.try_borrow_mut().unwrap();
     /// new_exclusive.push(5);
     /// ```
-    pub fn try_borrow_mut(&self) -> Option<RefMut<'_, T>> {
+    pub const fn try_borrow_mut(&self) -> Option<RefMut<'_, T>> {
         match self.state.get() {
             RefState::Unshared => {
                 self.state.set(RefState::Exclusive);
