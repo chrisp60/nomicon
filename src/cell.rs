@@ -1,9 +1,6 @@
-#![allow(warnings)]
-
 use std::{
     cell::UnsafeCell,
-    num::NonZeroUsize,
-    ops::{AddAssign, Deref, DerefMut},
+    ops::{Deref, DerefMut},
 };
 
 /// A memory location that can be updated through a shared reference.
@@ -127,12 +124,12 @@ impl<T> RefCell<T> {
         match self.state.get() {
             RefState::Unshared => {
                 self.state.set(RefState::Shared(1));
-                Some(Ref { refcell: &self })
+                Some(Ref { refcell: self })
             }
             RefState::Exclusive => None,
             RefState::Shared(count) => {
                 self.state.set(RefState::Shared(count + 1));
-                Some(Ref { refcell: &self })
+                Some(Ref { refcell: self })
             }
         }
     }
