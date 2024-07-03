@@ -14,7 +14,7 @@ pub struct Cell<T> {
 
 impl<T> Cell<T> {
     /// Returns a new [`Cell<T>`] with the value set to `T`.
-    pub fn new(value: T) -> Self {
+    pub const fn new(value: T) -> Self {
         Self {
             value: UnsafeCell::new(value),
         }
@@ -26,19 +26,19 @@ impl<T> Cell<T> {
         // * self is !Sync, so no other thread can mutate this value.
         // * self never releases a shared or mutable reference.
         unsafe {
-            *self.value.get() = value;
+            *self.value.get().as_mut_unchecked() = value;
         }
     }
 
     /// Copy out the value from within the [`Cell<T>`].
-    pub fn get(&self) -> T
+    pub const fn get(&self) -> T
     where
         T: Copy,
     {
         // SAFETY:
         // * self is !Sync, so no other thread can mutate this value.
         // * self never releases a shared or mutable reference.
-        unsafe { *self.value.get() }
+        unsafe { *self.value.get().as_ref_unchecked() }
     }
 }
 
@@ -61,7 +61,7 @@ pub struct RefCell<T> {
 }
 
 impl<T> RefCell<T> {
-    pub fn new(value: T) -> Self {
+    pub const fn new(value: T) -> Self {
         Self {
             value: UnsafeCell::new(value),
             state: Cell::new(RefState::Unshared),
@@ -189,7 +189,7 @@ impl<'a, T> Deref for RefMut<'a, T> {
             // * RefMut is only given out when there are no shared references and no
             //   exclusive references.
             // * self is !Send
-            &*self.refcell.value.get()
+            self.refcell.value.get().as_ref_unchecked()
         }
     }
 }
@@ -201,7 +201,7 @@ impl<'a, T> DerefMut for RefMut<'a, T> {
             // * RefMut is only given out when there are no shared references and no
             //   exclusive references.
             // * self is !Send
-            &mut *self.refcell.value.get()
+            self.refcell.value.get().as_mut_unchecked()
         }
     }
 }
@@ -218,7 +218,7 @@ impl<'a, T> Deref for Ref<'a, T> {
             // SAFETY:
             // * Ref is only given out when there are no exclusive references.
             // * self in !Send
-            &*self.refcell.value.get()
+            self.refcell.value.get().as_ref_unchecked()
         }
     }
 }
