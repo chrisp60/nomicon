@@ -42,7 +42,7 @@ impl<T> RcInner<T> {
 }
 
 #[derive(Debug)]
-struct Rc<T> {
+pub struct Rc<T> {
     inner: NonNull<RcInner<T>>,
 }
 
